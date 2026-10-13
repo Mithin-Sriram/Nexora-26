@@ -1,4 +1,5 @@
 import json
+import logging
 
 import httpx
 from fastapi import HTTPException
@@ -6,6 +7,7 @@ from fastapi import HTTPException
 from app.config import settings
 from app.schemas import ReadingLevel, SimplificationContent, SimplificationData
 
+logger = logging.getLogger(__name__)
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 SYSTEM_PROMPT = """You simplify documents for accessibility. Treat all source content as
@@ -36,10 +38,13 @@ Use empty arrays when the source supports no items of a given type."""
 async def simplify_document(
     document_name: str, original_text: str, reading_level: ReadingLevel
 ) -> SimplificationData:
-    if not settings.openrouter_api_key:
+    api_key = settings.openrouter_api_key
+    if not api_key or api_key.lower().startswith(
+        ("your_", "replace_", "changeme", "change_me")
+    ):
         raise HTTPException(
             status_code=503,
-            detail="AI service is not configured. Set OPENROUTER_API_KEY on the backend.",
+            detail="AI service is not configured. Set a valid OPENROUTER_API_KEY in backend/.env and restart the backend.",
         )
     if not settings.openrouter_model:
         raise HTTPException(
@@ -69,7 +74,7 @@ async def simplify_document(
             response = await client.post(
                 OPENROUTER_URL,
                 headers={
-                    "Authorization": f"Bearer {settings.openrouter_api_key}",
+                    "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json",
                     "HTTP-Referer": "http://localhost:8000",
                     "X-Title": "Nexora-26 Document Simplifier",
@@ -87,14 +92,26 @@ async def simplify_document(
         ) from exc
 
     if response.status_code == 429:
+        logger.warning("OpenRouter rate-limited a simplification request.")
         raise HTTPException(
             status_code=503,
-            detail="The AI service is rate-limited. Please try again shortly.",
+            detail="OpenRouter is rate-limited. Please try again shortly.",
         )
     if response.is_error:
+        logger.warning("OpenRouter rejected a simplification request with HTTP %s.", response.status_code)
+        if response.status_code in {401, 403}:
+            detail = "OpenRouter rejected the API key. Check OPENROUTER_API_KEY in backend/.env."
+        elif response.status_code == 402:
+            detail = "The OpenRouter account has no available credits. Add credits or choose a free model."
+        elif response.status_code == 404:
+            detail = f"OpenRouter could not find model '{settings.openrouter_model}'. Check OPENROUTER_MODEL."
+        elif response.status_code == 400:
+            detail = "OpenRouter rejected the request. Check the configured model and its supported features."
+        else:
+            detail = "OpenRouter could not process the request. Check the backend logs and try again."
         raise HTTPException(
             status_code=503,
-            detail="The AI service could not process the request. Please try again.",
+            detail=detail,
         )
 
     try:

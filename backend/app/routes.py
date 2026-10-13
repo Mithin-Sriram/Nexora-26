@@ -3,15 +3,17 @@ import logging
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from pydantic import ValidationError
 
 from app.ai_service import simplify_document
 from app.config import settings
 from app.document_service import extract_document_text
+from app.speech_service import synthesize_speech
 from app.schemas import (
     ErrorResponse,
     ReadingLevel,
+    SpeechRequest,
     SimplificationResponse,
     SimplifyTextRequest,
 )
@@ -95,3 +97,13 @@ async def simplify_file(
     document_name, text = await extract_document_text(file)
     data = await simplify_document(document_name, text, reading_level)
     return SimplificationResponse(data=data)
+
+
+@app.post("/api/speech/synthesize")
+async def synthesize_speech_audio(request: SpeechRequest) -> Response:
+    audio = await synthesize_speech(request.text)
+    return Response(
+        content=audio,
+        media_type="audio/wav",
+        headers={"Cache-Control": "no-store"},
+    )
