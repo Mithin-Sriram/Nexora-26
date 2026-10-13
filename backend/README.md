@@ -28,3 +28,4 @@ npm install express cors dotenv
 - Frontend default origin: `http://localhost:5173`
 - Ensure CORS is configured to allow `http://localhost:5173`
 - Pre-configured frontend API client expects backend at `http://localhost:8000`
+

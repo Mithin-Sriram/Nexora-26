@@ -14,3 +14,4 @@ In `.env` (copy from `.env.example`):
 VITE_API_BASE_URL=http://localhost:8000
 ```
 Use `api` from `src/services/api.ts` to make HTTP requests with automatic auth headers.
+
