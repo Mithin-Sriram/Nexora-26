@@ -1,8 +1,12 @@
 import axios from 'axios';
 
 // Pre-configured Axios instance for backend integration
+// In dev: defaults to http://localhost:8000
+// In production (Vercel multi-service): defaults to '' (same origin, handled by Vercel rewrites)
+const defaultBaseUrl = import.meta.env.DEV ? 'http://localhost:8000' : '';
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? defaultBaseUrl,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
