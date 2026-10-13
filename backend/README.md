@@ -1,31 +1,88 @@
-# Backend Service
+# Nexora-26 backend
 
-This directory is reserved for the backend API server.
+FastAPI service for extracting text from PDFs and TXT files and returning an
+AI-generated accessible rewrite. The OpenRouter API key stays on the server.
 
-## 🚀 Quick Recommendations
+## Setup
 
-Depending on your team's stack preference:
+Requires Python 3.10 or newer.
 
-### Option A: Python (FastAPI)
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install fastapi uvicorn
-# Run dev server on port 8000:
-# uvicorn main:app --reload --port 8000
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
 ```
 
-### Option B: Node.js (Express / Fastify)
+Set `OPENROUTER_API_KEY` in `.env` before using either simplification endpoint.
+Do not commit `.env`. Edit `OPENROUTER_MODEL` if a different model is preferred.
+
+## Run
+
 ```bash
-npm init -y
-npm install express cors dotenv
-# Run dev server on port 8000
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
----
+Or run `python main.py`; both use the configured `HOST` and `PORT`. The health
+endpoint does not require an AI key.
 
-## 🔗 Frontend Integration
-- Frontend default origin: `http://localhost:5173`
-- Ensure CORS is configured to allow `http://localhost:5173`
-- Pre-configured frontend API client expects backend at `http://localhost:8000`
+## Configuration
 
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `OPENROUTER_API_KEY` | unset | Required server-side key for simplification |
+| `OPENROUTER_MODEL` | `openai/gpt-4o-mini` | OpenRouter model identifier |
+| `HOST` | `0.0.0.0` | Bind address |
+| `PORT` | `8000` | Bind port |
+| `CORS_ORIGINS` | `http://localhost:5173` | Comma-separated allowed browser origins |
+
+The API accepts at most 10 MB per upload and 50,000 characters of extracted
+or pasted text. It supports UTF-8 TXT and text-based PDFs; scanned PDFs are not
+OCR-processed.
+
+## API
+
+### `GET /health`
+
+Returns `{"success": true, "message": "Backend is healthy"}`.
+
+### `POST /api/simplify/text`
+
+JSON request:
+
+```json
+{"text": "The document content", "reading_level": "simple"}
+```
+
+`reading_level` is `simple`, `very_simple`, or `detailed` and defaults to
+`simple`.
+
+### `POST /api/simplify/file`
+
+Multipart form fields: `file` (PDF or TXT) and optional `reading_level` (same
+values and default as above).
+
+Both simplification routes return:
+
+```json
+{
+  "success": true,
+  "data": {
+    "document_name": "Pasted text",
+    "original_text": "The document content",
+    "simplified_text": "A plain-language rewrite.",
+    "summary": "The document's main idea.",
+    "key_points": [],
+    "action_items": [],
+    "deadlines": [],
+    "difficult_terms": [],
+    "reading_level": "simple",
+    "warnings": []
+  },
+  "message": "Document simplified successfully."
+}
+```
+
+Errors use `{"success": false, "data": null, "message": "..."}` and an
+appropriate 4xx or 5xx status.
