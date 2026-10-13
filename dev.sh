@@ -1,5 +1,3 @@
 #!/usr/bin/env bash
-# Quick start script for local dev server
-export PATH="/home/yasar/.cache/nodejs/bin:$PATH"
-npm run dev
-
+# Run frontend dev server from repository root
+./frontend/dev.sh

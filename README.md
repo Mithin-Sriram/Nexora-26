@@ -1,51 +1,38 @@
-# Nexora-26 ⚡ SaaS Frontend Boilerplate
+# Nexora-26 ⚡ Fullstack Monorepo
 
-Clean, lightweight, and modern SaaS frontend boilerplate designed for rapid hackathon prototyping.
-
-## 🚀 Quick Start
-
-Run the dev script:
-```bash
-./dev.sh
-```
-Or manually:
-```bash
-export PATH="/home/yasar/.cache/nodejs/bin:$PATH"
-npm run dev
-```
-
-Visit [http://localhost:5173](http://localhost:5173).
-
----
-
-## 📂 Project Structure
+Split monorepo structure designed to prevent merge conflicts between frontend and backend work.
 
 ```text
 Nexora-26/
-├── src/
-│   ├── components/       # Reusable UI elements (Button, Navbar, etc.)
-│   │   ├── Button.tsx
-│   │   └── Navbar.tsx
-│   ├── services/         # API integration with backend
-│   │   └── api.ts        # Preconfigured Axios instance with auth interceptor
-│   ├── types/            # Shared TypeScript data models
-│   │   └── index.ts
-│   ├── App.tsx           # Starter landing / dashboard UI
-│   ├── main.tsx          # Application entrypoint
-│   └── index.css         # Tailwind CSS v4 styling & dark theme defaults
-├── dev.sh                # Instant 1-click startup script
-├── vite.config.ts        # Vite 6 config with Tailwind & '@/' alias
-├── package.json          # Pre-installed dependencies
-└── .env.example          # Environment variable template
+├── frontend/             # React 19 + TypeScript + Vite 6 + Tailwind CSS v4
+│   ├── src/
+│   │   ├── components/   # UI components (Button, Navbar, etc.)
+│   │   ├── services/     # Axios API client pointing to backend
+│   │   ├── types/        # TypeScript models
+│   │   ├── App.tsx
+│   │   └── main.tsx
+│   ├── dev.sh            # Run frontend dev server
+│   └── package.json
+│
+├── backend/              # Dedicated space for backend API service
+│   ├── .env.example      # Backend environment variables
+│   └── README.md         # Backend setup instructions (FastAPI / Express / etc.)
+│
+├── dev.sh                # Root shortcut: launches frontend dev server
+└── .gitignore            # Clean git ignore for both Node & Python/backend
 ```
 
 ---
 
-## 🛠️ Pre-installed Stack
+## 🚀 Quick Start
 
-- **Framework**: React 19 + TypeScript + Vite 6
-- **Styling**: Tailwind CSS v4
-- **Icons**: Lucide React (1,000+ icons)
-- **API Client**: Axios (configured with baseURL and token interceptor)
-- **Routing Ready**: React Router DOM
-- **Interactions**: canvas-confetti, clsx, tailwind-merge
+### 1. Frontend
+```bash
+./dev.sh
+# or: cd frontend && ./dev.sh
+```
+Runs at: [http://localhost:5173](http://localhost:5173)
+
+### 2. Backend
+See [`backend/README.md`](file:///home/yasar/Documents/Hacakthons/Nexora-26/backend/README.md) for setup with FastAPI or Node.js.
+Default port expected: `http://localhost:8000`
