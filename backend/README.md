@@ -15,7 +15,9 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Set `OPENROUTER_API_KEY` in `.env` before using either simplification endpoint.
+Replace the `your_openrouter_api_key_here` placeholder with a valid OpenRouter
+API key in `.env` before using either simplification endpoint. A placeholder is
+detected and reported as a configuration error rather than sent to the provider.
 Do not commit `.env`. Edit `OPENROUTER_MODEL` if a different model is preferred.
 
 ## Run
@@ -40,6 +42,15 @@ endpoint does not require an AI key.
 The API accepts at most 10 MB per upload and 50,000 characters of extracted
 or pasted text. It supports UTF-8 TXT and text-based PDFs; scanned PDFs are not
 OCR-processed.
+
+## Offline read aloud
+
+Read-aloud audio is synthesized locally by the bundled eSpeak NG engine and
+English voice data. It does not call a cloud TTS service, download voices, or
+depend on browser speech voices. The included runtime targets x86-64 Linux;
+the host still needs its standard Linux shared libraries. See
+[`vendor/espeak/README.md`](vendor/espeak/README.md) for version and license
+notices.
 
 ## API
 
@@ -86,3 +97,9 @@ Both simplification routes return:
 
 Errors use `{"success": false, "data": null, "message": "..."}` and an
 appropriate 4xx or 5xx status.
+
+### `POST /api/speech/synthesize`
+
+Accepts JSON `{"text": "Text to read aloud"}` (up to 50,000 characters) and
+returns locally generated WAV audio (`audio/wav`). No third-party speech
+service is used.
