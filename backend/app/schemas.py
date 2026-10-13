@@ -17,6 +17,17 @@ class SimplifyTextRequest(BaseModel):
         return value
 
 
+class SpeechRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=50_000)
+
+    @field_validator("text")
+    @classmethod
+    def text_must_not_be_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Text must not be empty.")
+        return value
+
+
 class Deadline(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
